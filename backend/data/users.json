@@ -1,0 +1,16 @@
+[
+  {
+    "id": "c60cd5be-db1d-4019-874e-5660782cc768",
+    "name": "Xayrullo",
+    "email": "admin@gmail.com",
+    "passwordHash": "324069e25c134ab0c9bb851151eaef3a:2ca85a7741800600ef7f0200938f8c745137b3642622d2f2d7678cee75e58a6f6a2be5ea1f4ba69496a057d7603ff9778367b8efb70435bc97ecfeb6f84a638b",
+    "createdAt": "2026-04-14T10:42:55.237Z"
+  },
+  {
+    "id": "668e9a71-04a9-4475-8cdd-8065592ffeef",
+    "name": "Xayrullo",
+    "email": "admin2@gmail.com",
+    "passwordHash": "6eaa06a38019afa6b45e9382bc3c163a:2b4bb86762c3025b59bc0adc342eed0c59dfd9e075c9620be53ce250abe341a94bf79776e1ff0618f6751d2e26fba75c256c3a588404fac100236b0be24a3ef2",
+    "createdAt": "2026-04-14T11:00:21.599Z"
+  }
+]

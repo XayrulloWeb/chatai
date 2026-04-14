@@ -1,0 +1,45 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Nunito:wght@600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", "Segoe UI", sans-serif;
+  --font-display: "Nunito", "Trebuchet MS", sans-serif;
+  --color-brand-50: #eef9ff;
+  --color-brand-100: #daf1ff;
+  --color-brand-500: #2f95dc;
+  --color-brand-700: #1e6ea4;
+  --color-mint-100: #dff9ef;
+  --color-mint-500: #2ebd8d;
+  --color-surface: #ffffff;
+}
+
+@layer base {
+  * {
+    @apply border-slate-200;
+  }
+
+  body {
+    @apply min-h-screen bg-slate-50 text-slate-800 antialiased;
+    background-image:
+      radial-gradient(circle at 0% 0%, rgba(47, 149, 220, 0.12), transparent 45%),
+      radial-gradient(circle at 100% 100%, rgba(46, 189, 141, 0.14), transparent 40%);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    @apply tracking-tight text-slate-900;
+  }
+}
+
+@layer components {
+  .page-wrap {
+    @apply mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8;
+  }
+
+  .panel {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-[0_12px_30px_-18px_rgba(15,23,42,0.26)];
+  }
+}
