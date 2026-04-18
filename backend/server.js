@@ -25,6 +25,7 @@ const CORS_ORIGINS = parseCorsOrigins(process.env.AUTH_CORS_ORIGIN, DEFAULT_CORS
 const store = await createStore();
 
 const server = createServer(async (req, res) => {
+  const requestPath = normalizeRequestPath(req.url);
   setCorsHeaders(req, res);
 
   if (req.method === "OPTIONS") {
@@ -34,11 +35,11 @@ const server = createServer(async (req, res) => {
   }
 
   try {
-    if (req.url === "/health" && req.method === "GET") {
+    if (requestPath === "/health" && req.method === "GET") {
       return sendJson(res, 200, { ok: true, storage: store.kind });
     }
 
-    if (req.url === "/api/auth/register" && req.method === "POST") {
+    if (requestPath === "/api/auth/register" && req.method === "POST") {
       const body = await getJsonBody(req, res);
       if (!body) return;
 
@@ -87,7 +88,7 @@ const server = createServer(async (req, res) => {
       });
     }
 
-    if (req.url === "/api/auth/login" && req.method === "POST") {
+    if (requestPath === "/api/auth/login" && req.method === "POST") {
       const body = await getJsonBody(req, res);
       if (!body) return;
 
@@ -110,7 +111,7 @@ const server = createServer(async (req, res) => {
       });
     }
 
-    if (req.url === "/api/auth/me" && req.method === "GET") {
+    if (requestPath === "/api/auth/me" && req.method === "GET") {
       const auth = await getAuthenticatedUser(req);
       if (!auth.ok) {
         return sendJson(res, 401, { message: auth.message });
@@ -121,7 +122,7 @@ const server = createServer(async (req, res) => {
       });
     }
 
-    if (req.url === "/api/chat/messages" && req.method === "GET") {
+    if (requestPath === "/api/chat/messages" && req.method === "GET") {
       const auth = await getAuthenticatedUser(req);
       if (!auth.ok) {
         return sendJson(res, 401, { message: auth.message });
@@ -131,7 +132,7 @@ const server = createServer(async (req, res) => {
       return sendJson(res, 200, { messages });
     }
 
-    if (req.url === "/api/chat/messages" && req.method === "PUT") {
+    if (requestPath === "/api/chat/messages" && req.method === "PUT") {
       const auth = await getAuthenticatedUser(req);
       if (!auth.ok) {
         return sendJson(res, 401, { message: auth.message });
@@ -310,6 +311,19 @@ function setCorsHeaders(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
   res.setHeader("Access-Control-Max-Age", "86400");
+}
+
+function normalizeRequestPath(rawUrl) {
+  try {
+    const pathname = new URL(String(rawUrl || "/"), "http://localhost").pathname;
+    const collapsed = pathname.replace(/\/{2,}/g, "/");
+    if (collapsed !== "/" && collapsed.endsWith("/")) {
+      return collapsed.replace(/\/+$/, "");
+    }
+    return collapsed || "/";
+  } catch {
+    return "/";
+  }
 }
 
 function parseCorsOrigins(rawValue, defaultOrigins = []) {

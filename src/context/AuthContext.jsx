@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import useLocalStorage from "../hooks/useLocalStorage.js";
+import { buildAuthApiUrl } from "../utils/authApi.js";
 
 const AuthContext = createContext(null);
-const authApiBaseUrl = import.meta.env.VITE_AUTH_API_URL || "http://localhost:4000";
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useLocalStorage("ai_auth_token", "");
@@ -91,7 +91,7 @@ async function request(path, options = {}) {
     ...(body ? { "Content-Type": "application/json" } : {}),
   };
 
-  const response = await fetch(`${authApiBaseUrl}${path}`, {
+  const response = await fetch(buildAuthApiUrl(path), {
     method,
     headers,
     ...(body ? { body: JSON.stringify(body) } : {}),

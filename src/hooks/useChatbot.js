@@ -1,6 +1,7 @@
 import { startTransition, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { askAssistant } from "../utils/aiClient.js";
+import { buildAuthApiUrl } from "../utils/authApi.js";
 
 const initialMessages = [
   {
@@ -9,7 +10,6 @@ const initialMessages = [
     text: "Assalomu alaykum. Men ta'limiy chatbotman. AI, prompt yozish va xavfsiz foydalanish haqida savol berishingiz mumkin."
   }
 ];
-const authApiBaseUrl = import.meta.env.VITE_AUTH_API_URL || "http://localhost:4000";
 const localChatPrefix = "ai_chat_backup";
 
 export default function useChatbot() {
@@ -169,7 +169,7 @@ export default function useChatbot() {
 
 async function requestChat(path, options = {}) {
   const { method = "GET", token, body } = options;
-  const response = await fetch(`${authApiBaseUrl}${path}`, {
+  const response = await fetch(buildAuthApiUrl(path), {
     method,
     headers: {
       Accept: "application/json",
