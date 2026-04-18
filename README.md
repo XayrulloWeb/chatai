@@ -2,6 +2,11 @@
 
 Sun'iy intellektdan to'g'ri, xavfsiz va samarali foydalanish bo'yicha ta'limiy platforma.
 
+## Deploy qo'llanma
+
+To'liq Netlify + backend (Render) instruksiya:
+- [`DEPLOY.md`](./DEPLOY.md)
+
 ## Ishga tushirish
 
 ```bash
@@ -90,6 +95,7 @@ Backend uchun ixtiyoriy `.env` (yoki terminal env):
 AUTH_PORT=4000
 AUTH_TOKEN_SECRET=change-this-secret
 AUTH_TOKEN_TTL_SECONDS=604800
+AUTH_CORS_ORIGIN=http://localhost:5173
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/ai_qollanma
 DATABASE_SSL=false
 DATABASE_AUTO_CREATE=true

@@ -15,11 +15,17 @@ loadEnvIfExists(path.join(__dirname, ".env"));
 const PORT = Number(process.env.AUTH_PORT || process.env.PORT || 4000);
 const TOKEN_SECRET = process.env.AUTH_TOKEN_SECRET || "change-this-secret-in-production";
 const TOKEN_TTL_SECONDS = Number(process.env.AUTH_TOKEN_TTL_SECONDS || 60 * 60 * 24 * 7);
+const DEFAULT_CORS_ORIGINS = [
+  "https://chataix.netlify.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+const CORS_ORIGINS = parseCorsOrigins(process.env.AUTH_CORS_ORIGIN, DEFAULT_CORS_ORIGINS);
 
 const store = await createStore();
 
 const server = createServer(async (req, res) => {
-  setCorsHeaders(res);
+  setCorsHeaders(req, res);
 
   if (req.method === "OPTIONS") {
     res.writeHead(204);
@@ -293,10 +299,68 @@ function sendJson(res, statusCode, data) {
   res.end(JSON.stringify(data));
 }
 
-function setCorsHeaders(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+function setCorsHeaders(req, res) {
+  const origin = String(req.headers.origin || "");
+  const allowedOrigin = getAllowedCorsOrigin(origin);
+  if (allowedOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+  }
+
+  res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+  res.setHeader("Access-Control-Max-Age", "86400");
+}
+
+function parseCorsOrigins(rawValue, defaultOrigins = []) {
+  const value = String(rawValue || "").trim();
+  if (value === "*") {
+    return { wildcard: true, values: new Set() };
+  }
+
+  const envOrigins = value
+    ? value
+        .split(",")
+        .map((item) => normalizeOrigin(item))
+        .filter(Boolean)
+    : [];
+
+  const defaults = defaultOrigins
+    .map((item) => normalizeOrigin(item))
+    .filter(Boolean);
+
+  const values = new Set([...defaults, ...envOrigins]);
+  if (values.size === 0) {
+    return { wildcard: true, values };
+  }
+
+  return { wildcard: false, values };
+}
+
+function getAllowedCorsOrigin(requestOrigin) {
+  const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
+  if (CORS_ORIGINS.wildcard) {
+    return "*";
+  }
+
+  if (!normalizedRequestOrigin) {
+    return null;
+  }
+
+  return CORS_ORIGINS.values.has(normalizedRequestOrigin) ? normalizedRequestOrigin : null;
+}
+
+function normalizeOrigin(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return raw.replace(/\/+$/, "").toLowerCase();
+  }
 }
 
 function getJsonBody(req, res) {

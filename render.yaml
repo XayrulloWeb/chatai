@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: ai-qollanma-backend
+    runtime: node
+    buildCommand: npm ci
+    startCommand: npm run server
+    healthCheckPath: /health
+    envVars:
+      - key: AUTH_TOKEN_SECRET
+        generateValue: true
+      - key: AUTH_TOKEN_TTL_SECONDS
+        value: 604800
+      - key: AUTH_CORS_ORIGIN
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_SSL
+        value: true
+      - key: DATABASE_AUTO_CREATE
+        value: true
+      - key: MIGRATE_FILE_DATA
+        value: true
