@@ -16,14 +16,14 @@ export default function PromptPage() {
       <SectionTitle
         eyebrow="Prompt Yozish"
         title="AI bilan to'g'ri muloqot qilish madaniyati"
-        description="Prompt — bu AI ga beriladigan topshiriq yoki savol. Savol qanchalik aniq bo'lsa, javob ham shunchalik foydali bo'ladi."
+        description="Prompt - bu AI ga beriladigan topshiriq yoki savol. Savol qanchalik aniq bo'lsa, javob ham shunchalik foydali bo'ladi."
       />
 
       <section className="panel p-6">
         <h3 className="text-xl font-bold">Yaxshi prompt qanday bo'ladi?</h3>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {goodPromptFeatures.map((item) => (
-            <div key={item} className="rounded-xl bg-slate-50 px-3 py-3 text-sm font-medium text-slate-700">
+            <div key={item} className="surface-soft px-3 py-3 text-sm font-medium text-slate-700">
               {item}
             </div>
           ))}
@@ -34,7 +34,7 @@ export default function PromptPage() {
         <h3 className="text-xl font-bold">Prompt yozish formulasi</h3>
         <ol className="mt-4 grid gap-3 sm:grid-cols-2">
           {promptFormula.map((step, index) => (
-            <li key={step} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm">
+            <li key={step} className="surface-soft px-3 py-3 text-sm">
               <span className="mr-2 rounded-md bg-brand-100 px-2 py-1 font-bold text-brand-700">{index + 1}</span>
               {step}
             </li>
@@ -95,7 +95,7 @@ export default function PromptPage() {
         <h3 className="text-xl font-bold">O'quvchilar uchun oddiy prompt namunalari</h3>
         <div className="mt-4 space-y-3">
           {studentPromptTemplates.map((template) => (
-            <p key={template} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
+            <p key={template} className="surface-soft p-3 text-sm leading-6 text-slate-700">
               {template}
             </p>
           ))}

@@ -34,7 +34,7 @@ export default function ChatbotPage() {
               type="button"
               onClick={() => sendMessage(question)}
               disabled={isSyncingHistory || isLoading}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-500 hover:text-brand-700"
+              className="rounded-xl border border-white/90 bg-white/85 px-3 py-2 text-sm font-semibold text-slate-700 shadow-[0_12px_22px_-20px_rgba(15,23,42,0.8)] hover:-translate-y-0.5 hover:border-brand-500 hover:text-brand-700"
             >
               {question}
             </button>
@@ -43,20 +43,20 @@ export default function ChatbotPage() {
       </section>
 
       <section className="panel flex h-[560px] flex-col overflow-hidden">
-        <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50 p-4 sm:p-5">
+        <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50/75 p-4 sm:p-5">
           {messages.map((item) => (
             <ChatMessage key={item.id} role={item.role} message={item.text} />
           ))}
           {isLoading ? (
             <div className="flex justify-start">
-              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+              <div className="rounded-2xl border border-white/90 bg-white/90 px-4 py-3 text-sm text-slate-500">
                 Yozilmoqda...
               </div>
             </div>
           ) : null}
           {isSyncingHistory ? (
             <div className="flex justify-start">
-              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+              <div className="rounded-2xl border border-white/90 bg-white/90 px-4 py-3 text-sm text-slate-500">
                 Tarix yuklanmoqda...
               </div>
             </div>
@@ -69,7 +69,7 @@ export default function ChatbotPage() {
             event.preventDefault();
             sendMessage();
           }}
-          className="border-t border-slate-200 bg-white p-4"
+          className="border-t border-white/85 bg-white/85 p-4"
         >
           <div className="flex items-center gap-2">
             <input
@@ -78,12 +78,12 @@ export default function ChatbotPage() {
               onChange={(event) => setInput(event.target.value)}
               placeholder="Savolingizni yozing..."
               disabled={isSyncingHistory}
-              className="h-11 flex-1 rounded-xl border border-slate-300 px-3 text-sm outline-none transition focus:border-brand-500"
+              className="h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand-500"
             />
             <button
               type="submit"
               disabled={isLoading || isSyncingHistory}
-              className="h-11 rounded-xl bg-brand-500 px-4 text-sm font-bold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="elevated-btn h-11 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             >
               Yuborish
             </button>

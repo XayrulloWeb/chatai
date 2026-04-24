@@ -76,7 +76,7 @@ export default function SurveyPage() {
       />
 
       <section className="panel p-6">
-        <p className="text-sm text-slate-600">
+        <p className="surface-soft inline-block px-3 py-2 text-sm text-slate-600">
           Yig'ilgan javoblar soni: <span className="font-bold text-slate-900">{submissions.length}</span>
         </p>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
@@ -92,14 +92,14 @@ export default function SurveyPage() {
 
           <button
             type="submit"
-            className="rounded-xl bg-brand-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-700"
+            className="elevated-btn px-5 py-3 text-sm"
           >
             Yuborish
           </button>
         </form>
 
         {submitted ? (
-          <div className="mt-4 rounded-2xl border border-mint-500/35 bg-mint-100/50 p-4 text-sm font-semibold text-mint-500">
+          <div className="mt-4 rounded-2xl border border-mint-500/35 bg-mint-100/55 p-4 text-sm font-semibold text-mint-500 shadow-[0_14px_24px_-20px_rgba(0,180,137,0.8)]">
             Rahmat! Sizning fikringiz biz uchun muhim.
           </div>
         ) : null}

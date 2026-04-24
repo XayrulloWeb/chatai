@@ -32,3 +32,9 @@ export const aiNeedReasons = [
   "Informatika fanida kod va mantiqni tushunishni yengillashtirish",
   "O'quvchi ham, o'qituvchi ham vaqtni samarali boshqarishi"
 ];
+
+export const projectTopic = {
+  title: "Informatika darslarida sun'iy intellekt vositalari orqali o'quv motivatsiyasini oshirish",
+  description:
+    "Loyihaning asosiy yo'nalishi: AI vositalarini dars jarayoniga mos va xavfsiz tarzda qo'llab, o'quvchilarning qiziqishi, ishtiroki va natijalarini yaxshilash.",
+};

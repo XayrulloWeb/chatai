@@ -1,12 +1,18 @@
 import HeroSection from "../components/HeroSection.jsx";
 import InfoCard from "../components/InfoCard.jsx";
 import SectionTitle from "../components/SectionTitle.jsx";
-import { aiNeedReasons, homeBenefits } from "../data/homeData.js";
+import { aiNeedReasons, homeBenefits, projectTopic } from "../data/homeData.js";
 
 export default function HomePage() {
   return (
     <div className="page-wrap space-y-8">
       <HeroSection />
+
+      <section className="panel p-6 sm:p-7">
+        <p className="chip inline-flex">Loyiha mavzusi</p>
+        <h2 className="mt-3 text-2xl leading-tight sm:text-3xl">{projectTopic.title}</h2>
+        <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">{projectTopic.description}</p>
+      </section>
 
       <section className="space-y-5">
         <SectionTitle

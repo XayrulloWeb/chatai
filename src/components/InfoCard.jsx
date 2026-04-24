@@ -1,8 +1,10 @@
 export default function InfoCard({ icon, title, description, items = [] }) {
   return (
-    <article className="panel p-5 sm:p-6">
+    <article className="panel group p-5 sm:p-6">
       <div className="mb-4 flex items-center gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-700">{icon}</span>
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-brand-100 to-mint-100 font-bold text-brand-700 shadow-[0_14px_26px_-20px_rgba(36,67,189,0.7)]">
+          {icon}
+        </span>
         <h3 className="text-lg font-bold">{title}</h3>
       </div>
       <p className="text-sm leading-6 text-slate-600 sm:text-base">{description}</p>

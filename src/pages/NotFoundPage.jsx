@@ -8,7 +8,7 @@ export default function NotFoundPage() {
         <p className="mt-3 text-slate-600">Kechirasiz, siz qidirayotgan sahifa mavjud emas.</p>
         <Link
           to="/"
-          className="mt-6 inline-block rounded-xl bg-brand-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-700"
+          className="elevated-btn mt-6 inline-block px-5 py-3 text-sm"
         >
           Bosh sahifaga qaytish
         </Link>

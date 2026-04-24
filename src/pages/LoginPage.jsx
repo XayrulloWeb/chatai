@@ -58,7 +58,7 @@ export default function LoginPage() {
               name="email"
               value={form.email}
               onChange={handleChange}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
               placeholder="you@email.com"
             />
           </label>
@@ -72,7 +72,7 @@ export default function LoginPage() {
               name="password"
               value={form.password}
               onChange={handleChange}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
               placeholder="Kamida 6 ta belgi"
             />
           </label>
@@ -86,7 +86,7 @@ export default function LoginPage() {
           <button
             disabled={isSubmitting}
             type="submit"
-            className="w-full rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
+            className="elevated-btn w-full px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting ? "Kirilmoqda..." : "Kirish"}
           </button>

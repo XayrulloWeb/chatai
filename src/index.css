@@ -1,28 +1,61 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Nunito:wght@600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap");
 @import "tailwindcss";
 
+:root {
+  --tg-bg-color: #f2f6ff;
+  --tg-text-color: #1f2937;
+  --tg-hint-color: #64748b;
+  --tg-link-color: #3363ff;
+  --tg-button-color: #3363ff;
+  --tg-button-text-color: #ffffff;
+  --tg-secondary-bg-color: #ffffff;
+  --tg-header-bg-color: #ffffff;
+}
+
 @theme {
-  --font-sans: "Manrope", "Segoe UI", sans-serif;
-  --font-display: "Nunito", "Trebuchet MS", sans-serif;
-  --color-brand-50: #eef9ff;
-  --color-brand-100: #daf1ff;
-  --color-brand-500: #2f95dc;
-  --color-brand-700: #1e6ea4;
-  --color-mint-100: #dff9ef;
-  --color-mint-500: #2ebd8d;
+  --font-sans: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Segoe UI", sans-serif;
+  --color-brand-50: #e8efff;
+  --color-brand-100: #d2deff;
+  --color-brand-500: #355dff;
+  --color-brand-700: #2443bd;
+  --color-mint-100: #dbfcf4;
+  --color-mint-500: #00b489;
   --color-surface: #ffffff;
 }
 
 @layer base {
   * {
-    @apply border-slate-200;
+    @apply border-slate-200/75;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply min-h-screen bg-slate-50 text-slate-800 antialiased;
+    @apply min-h-screen text-slate-800 antialiased;
+    background-color: #edf2ff;
     background-image:
-      radial-gradient(circle at 0% 0%, rgba(47, 149, 220, 0.12), transparent 45%),
-      radial-gradient(circle at 100% 100%, rgba(46, 189, 141, 0.14), transparent 40%);
+      linear-gradient(125deg, rgba(53, 93, 255, 0.08) 0%, rgba(0, 180, 137, 0.08) 48%, rgba(255, 129, 70, 0.12) 100%),
+      radial-gradient(circle at -8% 15%, rgba(53, 93, 255, 0.27), transparent 32%),
+      radial-gradient(circle at 108% 14%, rgba(0, 180, 137, 0.2), transparent 37%),
+      radial-gradient(circle at 50% 120%, rgba(255, 129, 70, 0.2), transparent 36%),
+      repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.22) 0,
+        rgba(255, 255, 255, 0.22) 1px,
+        transparent 1px,
+        transparent 48px
+      );
+  }
+
+  body.telegram-webapp {
+    min-height: 100dvh;
+    color: var(--tg-text-color);
+    background-color: var(--tg-bg-color);
+    background-image: none;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   h1,
@@ -32,14 +65,172 @@
     font-family: var(--font-display);
     @apply tracking-tight text-slate-900;
   }
+
+  ::selection {
+    background: rgba(53, 93, 255, 0.23);
+  }
+
+  a,
+  button,
+  input,
+  textarea {
+    transition: all 180ms ease;
+  }
 }
 
 @layer components {
   .page-wrap {
-    @apply mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8 lg:py-10;
   }
 
   .panel {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-[0_12px_30px_-18px_rgba(15,23,42,0.26)];
+    @apply rounded-[28px] border border-white/90 bg-white/80 shadow-[0_28px_70px_-40px_rgba(23,40,110,0.5)] backdrop-blur-xl;
+    animation: fade-pop 0.45s ease-out both;
+  }
+
+  .panel:hover {
+    transform: translateY(-2px);
+  }
+
+  .app-orb {
+    @apply pointer-events-none fixed -z-10 rounded-full blur-3xl;
+    animation: orb-float 8s ease-in-out infinite;
+  }
+
+  .app-orb-one {
+    height: 18rem;
+    width: 18rem;
+    left: -4rem;
+    top: 4.5rem;
+    background: rgba(51, 99, 255, 0.24);
+  }
+
+  .app-orb-two {
+    height: 15rem;
+    width: 15rem;
+    right: 2.5rem;
+    top: 6rem;
+    background: rgba(255, 99, 188, 0.18);
+    animation-delay: 1.2s;
+  }
+
+  .app-orb-three {
+    height: 20rem;
+    width: 20rem;
+    right: 18%;
+    bottom: -6rem;
+    background: rgba(14, 189, 149, 0.15);
+    animation-delay: 2s;
+  }
+
+  .elevated-btn {
+    @apply rounded-xl font-bold text-white shadow-[0_16px_38px_-18px_rgba(53,93,255,0.75)];
+    background: linear-gradient(120deg, #355dff 0%, #4f7cff 43%, #00b489 100%);
+  }
+
+  .elevated-btn:hover {
+    filter: saturate(1.12) brightness(1.03);
+    transform: translateY(-1.5px);
+  }
+
+  .chip {
+    @apply rounded-full border border-white/90 bg-white/85 px-3 py-1 text-xs font-bold text-slate-700 shadow-[0_8px_18px_-14px_rgba(15,23,42,0.55)];
+  }
+
+  .surface-soft {
+    @apply rounded-2xl border border-slate-200/80 bg-white/80;
+  }
+
+  .telegram-webapp .app-orb {
+    display: none;
+  }
+
+  .telegram-webapp header {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .telegram-webapp header > div {
+    border-color: rgba(148, 163, 184, 0.35);
+    background: var(--tg-header-bg-color);
+  }
+
+  .telegram-webapp .panel {
+    border-color: rgba(148, 163, 184, 0.35);
+    background: var(--tg-secondary-bg-color);
+    box-shadow: 0 8px 30px -24px rgba(15, 23, 42, 0.28);
+  }
+
+  .telegram-webapp .page-wrap {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .telegram-webapp input,
+  .telegram-webapp textarea {
+    color: var(--tg-text-color);
+    background: var(--tg-secondary-bg-color);
+    border-color: rgba(148, 163, 184, 0.35);
+  }
+
+  .telegram-webapp .elevated-btn,
+  .telegram-webapp button[class*="bg-brand-500"] {
+    background: var(--tg-button-color);
+    color: var(--tg-button-text-color);
+    box-shadow: none;
+  }
+
+  .telegram-webapp-dark h1,
+  .telegram-webapp-dark h2,
+  .telegram-webapp-dark h3,
+  .telegram-webapp-dark h4,
+  .telegram-webapp-dark [class*="text-slate-900"],
+  .telegram-webapp-dark [class*="text-slate-800"],
+  .telegram-webapp-dark [class*="text-slate-700"] {
+    color: var(--tg-text-color) !important;
+  }
+
+  .telegram-webapp-dark [class*="text-slate-600"],
+  .telegram-webapp-dark [class*="text-slate-500"] {
+    color: var(--tg-hint-color) !important;
+  }
+
+  .telegram-webapp-dark [class*="bg-white"],
+  .telegram-webapp-dark [class*="bg-slate-50"],
+  .telegram-webapp-dark [class*="bg-brand-50"] {
+    background: var(--tg-secondary-bg-color) !important;
+  }
+
+  .telegram-webapp-dark [class*="border-slate-"],
+  .telegram-webapp-dark [class*="border-white"] {
+    border-color: rgba(148, 163, 184, 0.35) !important;
+  }
+}
+
+@keyframes orb-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -14px, 0);
+  }
+}
+
+@keyframes fade-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .app-orb {
+    animation: none !important;
   }
 }
