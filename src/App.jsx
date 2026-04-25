@@ -2,7 +2,6 @@ import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import MainLayout from "./components/MainLayout.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import ChatbotPage from "./pages/ChatbotPage.jsx";
-import BooksPage from "./pages/BooksPage.jsx";
 import GuidePage from "./pages/GuidePage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
@@ -64,8 +63,8 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/qollanma" element={<GuidePage />} />
-          <Route path="/kitoblar" element={<BooksPage />} />
           <Route path="/mavzu" element={<TopicPage />} />
+          <Route path="/kitoblar" element={<Navigate to="/mavzu" replace />} />
           <Route path="/prompt-yozish" element={<PromptPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} />
           <Route path="/sorovnoma" element={<SurveyPage />} />

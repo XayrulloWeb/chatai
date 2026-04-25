@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const CHAT_MESSAGES_FILE = path.join(DATA_DIR, "chat-messages.json");
+const MOTIVATION_PROGRESS_FILE = path.join(DATA_DIR, "motivation-progress.json");
 
 export async function createStore() {
   const databaseUrl = String(process.env.DATABASE_URL || "").trim();
@@ -66,6 +67,10 @@ class FileStore {
     if (!existsSync(CHAT_MESSAGES_FILE)) {
       writeFileSync(CHAT_MESSAGES_FILE, "{}", "utf8");
     }
+
+    if (!existsSync(MOTIVATION_PROGRESS_FILE)) {
+      writeFileSync(MOTIVATION_PROGRESS_FILE, "{}", "utf8");
+    }
   }
 
   async findUserByEmail(email) {
@@ -98,6 +103,19 @@ class FileStore {
     return messages;
   }
 
+  async getMotivationProgress(userId) {
+    const motivationStore = this.readMotivationStore();
+    return normalizeMotivationProgress(motivationStore[userId]);
+  }
+
+  async setMotivationProgress(userId, progress) {
+    const motivationStore = this.readMotivationStore();
+    const normalized = normalizeMotivationProgress(progress);
+    motivationStore[userId] = normalized;
+    this.writeMotivationStore(motivationStore);
+    return normalized;
+  }
+
   async close() {}
 
   readUsers() {
@@ -127,6 +145,20 @@ class FileStore {
   writeChatStore(chatStore) {
     writeFileSync(CHAT_MESSAGES_FILE, JSON.stringify(chatStore, null, 2), "utf8");
   }
+
+  readMotivationStore() {
+    try {
+      const raw = readFileSync(MOTIVATION_PROGRESS_FILE, "utf8");
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  writeMotivationStore(store) {
+    writeFileSync(MOTIVATION_PROGRESS_FILE, JSON.stringify(store, null, 2), "utf8");
+  }
 }
 
 class PostgresStore {
@@ -150,6 +182,15 @@ class PostgresStore {
       CREATE TABLE IF NOT EXISTS chat_messages (
         user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
         messages JSONB NOT NULL DEFAULT '[]'::jsonb,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS motivation_progress (
+        user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        xp INTEGER NOT NULL DEFAULT 0,
+        completed_task_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
     `);
@@ -214,6 +255,37 @@ class PostgresStore {
     return messages;
   }
 
+  async getMotivationProgress(userId) {
+    const result = await this.pool.query(
+      `SELECT xp, completed_task_ids, updated_at FROM motivation_progress WHERE user_id = $1 LIMIT 1`,
+      [userId]
+    );
+    if (result.rowCount === 0) {
+      return normalizeMotivationProgress(null);
+    }
+
+    const row = result.rows[0];
+    return normalizeMotivationProgress({
+      xp: row.xp,
+      completedTaskIds: row.completed_task_ids,
+      updatedAt: row.updated_at,
+    });
+  }
+
+  async setMotivationProgress(userId, progress) {
+    const normalized = normalizeMotivationProgress(progress);
+    await this.pool.query(
+      `
+      INSERT INTO motivation_progress (user_id, xp, completed_task_ids, updated_at)
+      VALUES ($1, $2, $3::jsonb, NOW())
+      ON CONFLICT (user_id)
+      DO UPDATE SET xp = EXCLUDED.xp, completed_task_ids = EXCLUDED.completed_task_ids, updated_at = NOW()
+      `,
+      [userId, normalized.xp, JSON.stringify(normalized.completedTaskIds)]
+    );
+    return normalized;
+  }
+
   async close() {
     await this.pool.end();
   }
@@ -236,6 +308,7 @@ async function migrateFileDataToPostgres(store) {
   }
 
   const chatStore = readChatStoreFromFile();
+  const motivationStore = readMotivationStoreFromFile();
 
   for (const sourceUser of users) {
     const user = normalizeStoredUser(sourceUser);
@@ -251,16 +324,20 @@ async function migrateFileDataToPostgres(store) {
       }
 
       const sourceMessages = chatStore[user.id];
-      if (!Array.isArray(sourceMessages) || sourceMessages.length === 0) {
-        continue;
+      if (Array.isArray(sourceMessages) && sourceMessages.length > 0) {
+        const existingMessages = await store.getChatMessages(dbUser.id);
+        if (existingMessages.length === 0) {
+          await store.setChatMessages(dbUser.id, sourceMessages);
+        }
       }
 
-      const existingMessages = await store.getChatMessages(dbUser.id);
-      if (existingMessages.length > 0) {
-        continue;
+      const sourceProgress = normalizeMotivationProgress(motivationStore[user.id]);
+      if (sourceProgress.xp > 0 || sourceProgress.completedTaskIds.length > 0) {
+        const existingProgress = await store.getMotivationProgress(dbUser.id);
+        if (existingProgress.xp === 0 && existingProgress.completedTaskIds.length === 0) {
+          await store.setMotivationProgress(dbUser.id, sourceProgress);
+        }
       }
-
-      await store.setChatMessages(dbUser.id, sourceMessages);
     } catch (error) {
       console.warn("File-to-Postgres migration skipped one user:", user.email, error?.message || error);
     }
@@ -288,6 +365,20 @@ function readChatStoreFromFile() {
     }
 
     const raw = readFileSync(CHAT_MESSAGES_FILE, "utf8");
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function readMotivationStoreFromFile() {
+  try {
+    if (!existsSync(MOTIVATION_PROGRESS_FILE)) {
+      return {};
+    }
+
+    const raw = readFileSync(MOTIVATION_PROGRESS_FILE, "utf8");
     const parsed = JSON.parse(raw);
     return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
   } catch {
@@ -370,4 +461,27 @@ function buildAdminConnectionString(connectionString) {
 
 function quoteIdentifier(value) {
   return `"${String(value).replace(/"/g, "\"\"")}"`;
+}
+
+function normalizeMotivationProgress(progress) {
+  const rawXp = Number(progress?.xp);
+  const xp = Number.isFinite(rawXp) && rawXp > 0 ? Math.floor(rawXp) : 0;
+  const completedTaskIds = Array.isArray(progress?.completedTaskIds)
+    ? progress.completedTaskIds
+        .map((item) => String(item || "").trim())
+        .filter(Boolean)
+        .filter((item, index, list) => list.indexOf(item) === index)
+    : [];
+
+  const updatedAtRaw = progress?.updatedAt;
+  const updatedAt =
+    updatedAtRaw && !Number.isNaN(Date.parse(String(updatedAtRaw)))
+      ? new Date(updatedAtRaw).toISOString()
+      : new Date().toISOString();
+
+  return {
+    xp,
+    completedTaskIds,
+    updatedAt,
+  };
 }

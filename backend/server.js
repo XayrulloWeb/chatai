@@ -21,6 +21,70 @@ const DEFAULT_CORS_ORIGINS = [
   "http://localhost:3000",
 ];
 const CORS_ORIGINS = parseCorsOrigins(process.env.AUTH_CORS_ORIGIN, DEFAULT_CORS_ORIGINS);
+const MOTIVATION_LEVELS = [
+  { id: "start", title: "Start", minXp: 0 },
+  { id: "izlanuvchi", title: "Izlanuvchi", minXp: 100 },
+  { id: "tahlilchi", title: "Tahlilchi", minXp: 250 },
+  { id: "lider", title: "Lider", minXp: 450 },
+];
+const MOTIVATION_TASKS = [
+  {
+    id: "safe-link-check",
+    title: "Phishing havolani aniqlang",
+    description: "Xavfli xabarni tanlash orqali raqamli xavfsizlikni tekshiring.",
+    question: "Qaysi holat phishing xavfi eng yuqori ekanini ko'rsatadi?",
+    options: [
+      { id: "a", text: "Noma'lum emaildan 'hisobni tasdiqlang' degan shoshilinch havola keladi" },
+      { id: "b", text: "Maktab o'qituvchisi topshiriq faylini rasmiy guruhga joylaydi" },
+      { id: "c", text: "Kutubxona saytida jadval PDF sifatida berilgan" },
+      { id: "d", text: "Darslik havolasi eduportal.uz domenida ochiladi" },
+    ],
+    correctOptionId: "a",
+    xp: 30,
+  },
+  {
+    id: "strong-password",
+    title: "Kuchli parolni tanlang",
+    description: "Parol xavfsizligi bo'yicha to'g'ri variantni tanlang.",
+    question: "Qaysi parol eng kuchli va xavfsiz hisoblanadi?",
+    options: [
+      { id: "a", text: "12345678" },
+      { id: "b", text: "qwerty2024" },
+      { id: "c", text: "Ali2009" },
+      { id: "d", text: "T9!mQ2#zL7@p" },
+    ],
+    correctOptionId: "d",
+    xp: 40,
+  },
+  {
+    id: "prompt-quality",
+    title: "Yaxshi promptni toping",
+    description: "AI bilan ishlashda aniq va sifatli so'rovni ajrating.",
+    question: "Quyidagilardan qaysi biri eng yaxshi prompt?",
+    options: [
+      { id: "a", text: "Menga hammasini aytib ber" },
+      { id: "b", text: "Informatika mavzusini tushuntir" },
+      { id: "c", text: "7-sinf uchun algoritm mavzusini 3 qadam bilan oddiy tilda tushuntir va 1 misol ber" },
+      { id: "d", text: "Tezroq javob yoz" },
+    ],
+    correctOptionId: "c",
+    xp: 30,
+  },
+  {
+    id: "fact-check",
+    title: "Fakt tekshiruv qoidasi",
+    description: "AI javobini ishonchli ishlatish uchun to'g'ri qadamni tanlang.",
+    question: "AI javobidan keyingi eng to'g'ri harakat qaysi?",
+    options: [
+      { id: "a", text: "Javobni tekshirmasdan darhol ishlatish" },
+      { id: "b", text: "Kamida 2 ishonchli manba bilan solishtirish" },
+      { id: "c", text: "Faqat do'st fikrini so'rash" },
+      { id: "d", text: "Faqat AIga yana bir bor savol berish" },
+    ],
+    correctOptionId: "b",
+    xp: 25,
+  },
+];
 
 const store = await createStore();
 
@@ -154,6 +218,79 @@ const server = createServer(async (req, res) => {
       });
     }
 
+    if (requestPath === "/api/motivation/progress" && req.method === "GET") {
+      const auth = await getAuthenticatedUser(req);
+      if (!auth.ok) {
+        return sendJson(res, 401, { message: auth.message });
+      }
+
+      const progress = await store.getMotivationProgress(auth.user.id);
+      return sendJson(res, 200, buildMotivationPayload(progress));
+    }
+
+    if (requestPath === "/api/motivation/tasks/solve" && req.method === "POST") {
+      const auth = await getAuthenticatedUser(req);
+      if (!auth.ok) {
+        return sendJson(res, 401, { message: auth.message });
+      }
+
+      const body = await getJsonBody(req, res);
+      if (!body) return;
+
+      const taskId = String(body.taskId || "").trim();
+      const task = MOTIVATION_TASKS.find((item) => item.id === taskId);
+      if (!task) {
+        return sendJson(res, 400, { message: "taskId is invalid." });
+      }
+
+      const answerOptionId = String(body.answerOptionId || "").trim();
+      if (!answerOptionId) {
+        return sendJson(res, 400, { message: "answerOptionId is required." });
+      }
+
+      const isValidOption = task.options.some((option) => option.id === answerOptionId);
+      if (!isValidOption) {
+        return sendJson(res, 400, { message: "answerOptionId is invalid for this task." });
+      }
+
+      const currentProgress = normalizeMotivationProgress(await store.getMotivationProgress(auth.user.id));
+      if (currentProgress.completedTaskIds.includes(task.id)) {
+        return sendJson(res, 200, {
+          ok: true,
+          alreadyCompleted: true,
+          correct: true,
+          message: "Bu vazifa allaqachon bajarilgan.",
+          ...buildMotivationPayload(currentProgress),
+        });
+      }
+
+      const isCorrect = answerOptionId === task.correctOptionId;
+      if (!isCorrect) {
+        return sendJson(res, 200, {
+          ok: true,
+          alreadyCompleted: false,
+          correct: false,
+          message: "Javob noto'g'ri. Yana bir bor urinib ko'ring.",
+          ...buildMotivationPayload(currentProgress),
+        });
+      }
+
+      const nextProgress = {
+        xp: currentProgress.xp + task.xp,
+        completedTaskIds: [...currentProgress.completedTaskIds, task.id],
+        updatedAt: new Date().toISOString(),
+      };
+
+      const savedProgress = await store.setMotivationProgress(auth.user.id, nextProgress);
+      return sendJson(res, 200, {
+        ok: true,
+        alreadyCompleted: false,
+        correct: true,
+        message: `Ajoyib! +${task.xp} XP qo'shildi.`,
+        ...buildMotivationPayload(savedProgress),
+      });
+    }
+
     return sendJson(res, 404, { message: "Route not found." });
   } catch (error) {
     console.error("Unhandled server error:", error);
@@ -273,6 +410,103 @@ function sanitizeChatMessages(messages) {
       };
     })
     .filter(Boolean);
+}
+
+function buildMotivationPayload(rawProgress) {
+  const progress = normalizeMotivationProgress(rawProgress);
+  const level = resolveMotivationLevel(progress.xp);
+  const nextLevel = MOTIVATION_LEVELS.find((item) => item.minXp > progress.xp) || null;
+  const progressToNextLevel = nextLevel
+    ? Math.min(
+        100,
+        Math.floor(((progress.xp - level.minXp) / Math.max(1, nextLevel.minXp - level.minXp)) * 100)
+      )
+    : 100;
+
+  const completedTaskIds = progress.completedTaskIds;
+  const completedTaskCount = completedTaskIds.length;
+  const totalTaskCount = MOTIVATION_TASKS.length;
+  const tasks = MOTIVATION_TASKS.map((task) => publicMotivationTask(task, completedTaskIds.includes(task.id)));
+
+  return {
+    xp: progress.xp,
+    level,
+    nextLevel,
+    progressToNextLevel,
+    completedTaskIds,
+    completedTaskCount,
+    totalTaskCount,
+    tasks,
+    badges: buildBadges(completedTaskIds),
+    updatedAt: progress.updatedAt,
+  };
+}
+
+function resolveMotivationLevel(xp) {
+  let current = MOTIVATION_LEVELS[0];
+  for (const level of MOTIVATION_LEVELS) {
+    if (xp >= level.minXp) {
+      current = level;
+    }
+  }
+  return current;
+}
+
+function buildBadges(completedTaskIds) {
+  const has = (taskId) => completedTaskIds.includes(taskId);
+  const hasAllTasks = MOTIVATION_TASKS.every((task) => has(task.id));
+  return [
+    {
+      id: "prompt-ustasi",
+      title: "Prompt Ustasi",
+      unlocked: has("prompt-quality"),
+    },
+    {
+      id: "tekshiruvchi",
+      title: "Tekshiruvchi",
+      unlocked: has("fact-check"),
+    },
+    {
+      id: "xavfsizlik-qalqoni",
+      title: "Xavfsizlik Qalqoni",
+      unlocked: has("safe-link-check") && has("strong-password"),
+    },
+    {
+      id: "intizom",
+      title: "Intizom",
+      unlocked: hasAllTasks,
+    },
+  ];
+}
+
+function publicMotivationTask(task, completed) {
+  return {
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    question: task.question,
+    options: task.options,
+    xp: task.xp,
+    completed,
+  };
+}
+
+function normalizeMotivationProgress(progress) {
+  const xpNumber = Number(progress?.xp);
+  const xp = Number.isFinite(xpNumber) && xpNumber > 0 ? Math.floor(xpNumber) : 0;
+  const completedTaskIds = Array.isArray(progress?.completedTaskIds)
+    ? progress.completedTaskIds
+        .map((item) => String(item || "").trim())
+        .filter(Boolean)
+        .filter((item, index, list) => list.indexOf(item) === index)
+    : [];
+
+  const updatedAt =
+    progress?.updatedAt && !Number.isNaN(Date.parse(String(progress.updatedAt)))
+      ? new Date(progress.updatedAt).toISOString()
+      : new Date().toISOString();
+
+  return { xp, completedTaskIds, updatedAt };
 }
 
 function publicUser(user) {

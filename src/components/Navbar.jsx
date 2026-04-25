@@ -5,7 +5,6 @@ import { useAuth } from "../context/AuthContext.jsx";
 const navItems = [
   { to: "/", label: "Home" },
   { to: "/mavzu", label: "Mavzu" },
-  { to: "/kitoblar", label: "Kitoblar" },
   { to: "/qollanma", label: "Qo'llanma" },
   { to: "/prompt-yozish", label: "Prompt yozish" },
   { to: "/chatbot", label: "Chatbot" },
@@ -13,10 +12,10 @@ const navItems = [
 ];
 
 function getLinkClass(isActive) {
-  return `rounded-full px-4 py-2 text-sm font-extrabold tracking-tight ${
+  return `whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-extrabold tracking-tight transition ${
     isActive
       ? "bg-gradient-to-r from-brand-500 via-[#4f7cff] to-[#00b489] text-white shadow-[0_14px_32px_-18px_rgba(53,93,255,0.9)]"
-      : "text-slate-700 hover:bg-white/80 hover:text-slate-950"
+      : "text-slate-700 hover:bg-white/90 hover:text-slate-950"
   }`;
 }
 
@@ -24,6 +23,8 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated, isBootstrapping, logout } = useAuth();
   const visibleNavItems = isAuthenticated ? navItems : [];
+  const displayName = String(user?.name || user?.email || "User").trim();
+  const userInitial = displayName.charAt(0).toUpperCase() || "U";
 
   return (
     <header className="sticky top-0 z-40 px-3 pt-3 sm:px-5">
@@ -52,9 +53,18 @@ export default function Navbar() {
               <span className="chip">Tekshirilmoqda...</span>
             ) : isAuthenticated ? (
               <>
-                <span className="chip max-w-[220px] truncate">
-                  {user?.name || user?.email}
-                </span>
+                <div className="group relative">
+                  <span
+                    className="grid h-10 w-10 place-items-center rounded-full border border-white/90 bg-gradient-to-br from-brand-500 to-[#00b489] text-sm font-extrabold text-white shadow-[0_14px_28px_-18px_rgba(53,93,255,0.9)]"
+                    aria-label={displayName}
+                    title={displayName}
+                  >
+                    {userInitial}
+                  </span>
+                  <div className="pointer-events-none absolute right-0 top-[calc(100%+10px)] z-50 translate-y-1 rounded-xl border border-white/85 bg-white/95 px-3 py-1.5 text-xs font-bold text-slate-700 opacity-0 shadow-[0_14px_32px_-20px_rgba(15,23,42,0.55)] transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+                    {displayName}
+                  </div>
+                </div>
                 <button
                   type="button"
                   onClick={logout}
@@ -106,9 +116,12 @@ export default function Navbar() {
               <span className="rounded-xl px-3 py-2 text-sm font-semibold text-slate-500">Tekshirilmoqda...</span>
             ) : isAuthenticated ? (
               <>
-                <span className="chip mx-1">
-                  {user?.name || user?.email}
-                </span>
+                <div className="mx-1 flex items-center gap-2 rounded-xl border border-white/90 bg-white/85 px-3 py-2">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-[#00b489] text-xs font-extrabold text-white">
+                    {userInitial}
+                  </span>
+                  <span className="truncate text-sm font-semibold text-slate-700">{displayName}</span>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
